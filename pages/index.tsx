@@ -2,8 +2,6 @@ import React, { useState } from 'react'
 import Head from 'next/head'
 import MobileHeader from '../components/MobileHeader'
 import ProductGrid from '../components/ProductGrid'
-import MobileNavigation from '../components/MobileNavigation'
-import Cart from '../components/Cart'
 
 interface Product {
   id: number
@@ -50,23 +48,30 @@ const mockProducts: Product[] = [
 ]
 
 export default function Home() {
-  const [cartItems, setCartItems] = useState<Product[]>([])
-  const [isCartOpen, setIsCartOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
-
-  const addToCart = (product: Product) => {
-    setCartItems(prev => [...prev, product])
-  }
-
-  const removeFromCart = (productId: number) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId))
-  }
 
   const filteredProducts = selectedCategory === 'All' 
     ? mockProducts 
     : mockProducts.filter(product => product.category === selectedCategory)
 
   const categories = ['All', ...Array.from(new Set(mockProducts.map(p => p.category)))]
+
+  // WhatsApp configuration
+  const whatsappNumber = "+6281234567890" // Replace with actual WhatsApp number
+  
+  const sendWhatsAppMessage = (product: Product) => {
+    const message = `Halo, saya tertarik dengan produk ${product.name} seharga ${formatPrice(product.price)}. Apakah masih tersedia?`
+    const whatsappUrl = `https://wa.me/${whatsappNumber.replace('+', '')}?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, '_blank')
+  }
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(price)
+  }
 
   return (
     <>
@@ -75,11 +80,8 @@ export default function Home() {
         <meta name="description" content="Shop the latest products with our mobile-optimized e-commerce platform" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50 pb-20">
-        <MobileHeader 
-          cartCount={cartItems.length}
-          onCartClick={() => setIsCartOpen(true)}
-        />
+      <div className="min-h-screen bg-gray-50">
+        <MobileHeader />
 
         {/* Category Filter */}
         <div className="sticky top-16 z-30 bg-white border-b border-gray-200 px-4 py-3">
@@ -102,16 +104,7 @@ export default function Home() {
 
         <ProductGrid 
           products={filteredProducts}
-          onAddToCart={addToCart}
-        />
-
-        <MobileNavigation />
-
-        <Cart
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          items={cartItems}
-          onRemoveItem={removeFromCart}
+          onWhatsAppClick={sendWhatsAppMessage}
         />
       </div>
     </>
