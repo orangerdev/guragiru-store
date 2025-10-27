@@ -71,7 +71,13 @@ export default function ShopPage() {
 
       {/* States */}
       {loading && products.length === 0 && (
-        <div className="mx-auto max-w-md px-4 py-8 text-center text-white/60">Loading products…</div>
+        <section className="mx-auto max-w-md px-2 pb-16">
+          <div className="grid grid-cols-2 gap-2">
+            {Array.from({ length: LIMIT }).map((_, i) => (
+              <ShimmerCard key={i} />
+            ))}
+          </div>
+        </section>
       )}
       {error && (
         <div className="mx-auto max-w-md px-4 py-8 text-center text-red-400">{error}</div>
@@ -84,11 +90,14 @@ export default function ShopPage() {
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
+            {loading && products.length > 0 && (
+              <>
+                <ShimmerCard />
+                <ShimmerCard />
+              </>
+            )}
           </div>
           <div ref={sentinelRef} className="h-10" />
-          {loading && products.length > 0 && (
-            <div className="py-4 text-center text-white/50 text-sm">Loading more…</div>
-          )}
           {!hasMore && products.length > 0 && (
             <div className="py-6 text-center text-white/30 text-xs">You’ve reached the end</div>
           )}
@@ -138,6 +147,18 @@ function ProductCard({ product }: { product: Product }) {
           </svg>
           WhatsApp
         </button>
+      </div>
+    </article>
+  )
+}
+
+function ShimmerCard() {
+  return (
+    <article className="overflow-hidden rounded-xl border border-white/10 bg-white/5 animate-pulse">
+      <div className="relative aspect-[3/4] w-full bg-white/10" />
+      <div className="p-3 space-y-2">
+        <div className="h-3 bg-white/10 rounded w-4/5" />
+        <div className="h-9 bg-whatsapp-primary/20 rounded" />
       </div>
     </article>
   )
