@@ -13,8 +13,8 @@ compatibility_flags = ["nodejs_compat"]
 # ]
 
 [assets]
-directory = ".open-next/assets"
-binding = "ASSETS"
+# directory = ".open-next/assets"
+# binding = "ASSETS"
 
 [build]
 # Ensure the OpenNext Cloudflare adapter compiles the worker output before deploy
@@ -22,6 +22,6 @@ command = "opennextjs-cloudflare build"
 
 [vars]
 # Public runtime config injected at build/deploy time
-NEXT_PUBLIC_API_BASE_URL = "https://shop-db.orangerdigiart.workers.dev"
-NEXT_PUBLIC_WHATSAPP_PHONE = "62811984666"
-NEXT_PUBLIC_WHATSAPP_DEFAULT_MESSAGE = "Halo, saya tertarik dengan produk ini:"
+# NEXT_PUBLIC_API_BASE_URL = "https://shop-db.orangerdigiart.workers.dev"
+# NEXT_PUBLIC_WHATSAPP_PHONE = "62811984666"
+# NEXT_PUBLIC_WHATSAPP_DEFAULT_MESSAGE = "Halo, saya tertarik dengan produk ini:"
