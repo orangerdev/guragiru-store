@@ -1,21 +1,63 @@
 'use client'
 
-import { useProducts } from '@/hooks/useProducts'
 import type { Product } from '@/types'
+import { apiService } from '@/services/api'
 import { whatsappService } from '@/services/whatsapp'
 import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDrive'
 import Image from 'next/image'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export default function ShopPage() {
-  const { products, loading, error } = useProducts()
+  const LIMIT = 10
+  const [products, setProducts] = useState<Product[]>([])
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(true)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  const loadPage = useCallback(async (p: number) => {
+    if (loading) return
+    setLoading(true)
+    setError(null)
+    try {
+      const next = await apiService.getProducts({ limit: LIMIT, page: p, order_by: 'datetime', order: 'desc' })
+      setProducts(prev => (p === 1 ? next : [...prev, ...next]))
+      setHasMore(next.length >= LIMIT)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to load products'
+      setError(msg)
+    } finally {
+      setLoading(false)
+    }
+  }, [loading])
+
+  useEffect(() => {
+    loadPage(1)
+  }, [loadPage])
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0]
+      if (entry.isIntersecting && !loading && hasMore) {
+        const nextPage = page + 1
+        setPage(nextPage)
+        loadPage(nextPage)
+      }
+    }, { root: null, rootMargin: '200px', threshold: 0 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [page, loading, hasMore, loadPage])
 
   return (
     <main className="min-h-screen w-full bg-black text-white">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60">
         <div className="mx-auto max-w-md px-4 py-3 flex items-center justify-center">
-          <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-sm font-semibold">
-            GG
+          <div className="relative w-10 h-10 overflow-hidden rounded-full border border-white/20">
+            <Image src="/assets/img/logo.webp" alt="Store Logo" fill className="object-cover" sizes="40px" priority />
           </div>
         </div>
       </header>
@@ -28,7 +70,7 @@ export default function ShopPage() {
       </section>
 
       {/* States */}
-      {loading && (
+      {loading && products.length === 0 && (
         <div className="mx-auto max-w-md px-4 py-8 text-center text-white/60">Loading products…</div>
       )}
       {error && (
@@ -36,13 +78,20 @@ export default function ShopPage() {
       )}
 
       {/* Products grid - mobile only (2 columns) */}
-      {!loading && !error && (
+      {!error && (
         <section className="mx-auto max-w-md px-2 pb-16">
           <div className="grid grid-cols-2 gap-2">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
+          <div ref={sentinelRef} className="h-10" />
+          {loading && products.length > 0 && (
+            <div className="py-4 text-center text-white/50 text-sm">Loading more…</div>
+          )}
+          {!hasMore && products.length > 0 && (
+            <div className="py-6 text-center text-white/30 text-xs">You’ve reached the end</div>
+          )}
         </section>
       )}
     </main>

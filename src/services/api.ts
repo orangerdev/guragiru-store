@@ -4,9 +4,21 @@ class ApiService {
   /**
    * Fetch all products from the internal API route (server-side)
    */
-  async getProducts(): Promise<Product[]> {
+  async getProducts(params?: {
+    limit?: number
+    page?: number
+    order_by?: 'id' | 'datetime' | 'product_name' | 'product_slug' | 'created_at' | 'updated_at'
+    order?: 'asc' | 'desc'
+  }): Promise<Product[]> {
     try {
-      const response = await fetch('/api/products', {
+      const qs = new URLSearchParams()
+      if (params?.limit != null) qs.set('limit', String(params.limit))
+      if (params?.page != null) qs.set('page', String(params.page))
+      if (params?.order_by) qs.set('order_by', params.order_by)
+      if (params?.order) qs.set('order', params.order)
+      const url = qs.toString() ? `/api/products?${qs.toString()}` : '/api/products'
+
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

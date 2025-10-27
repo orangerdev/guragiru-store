@@ -72,12 +72,26 @@ Mendapatkan daftar produk dari tabel aktif.
 
 **Query Parameters:**
 - `id` (optional): ID produk spesifik
+- `order_by` (optional): Kolom untuk pengurutan. Default: `id`. Opsi yang diizinkan: `id`, `datetime`, `product_name`, `product_slug`, `created_at`, `updated_at`
+- `order` (optional): Arah pengurutan. Default: `asc`. Opsi: `asc` atau `desc`
+- `limit` (optional): Jumlah item per halaman. Default: `-1` untuk menampilkan semua produk (tanpa pagination)
+- `page` (optional): Nomor halaman (mulai dari 1). Default: `1`. Diabaikan jika `limit = -1`.
 
 **Examples:**
 
 **Get all products:**
 ```bash
 curl -X GET "https://your-worker-domain.workers.dev/api/db/products"
+```
+
+**Get all products ordered by datetime DESC:**
+```bash
+curl -X GET "https://your-worker-domain.workers.dev/api/db/products?order_by=datetime&order=desc"
+```
+
+**Get paginated products (limit 20, page 2):**
+```bash
+curl -X GET "https://your-worker-domain.workers.dev/api/db/products?limit=20&page=2"
 ```
 
 **Get specific product:**
@@ -88,7 +102,12 @@ curl -X GET "https://your-worker-domain.workers.dev/api/db/products?id=123"
 **Response (All products):**
 ```json
 {
-  "products": [
+  "message": "Products retrieved",
+  "active_table": "products_a",
+  "order": { "by": "id", "direction": "ASC" },
+  "pagination": { "limit": -1, "page": 1, "applied": false },
+  "count": 1,
+  "data": [
     {
       "id": 1,
       "datetime": "2025-10-26 10:30:00",
@@ -100,9 +119,7 @@ curl -X GET "https://your-worker-domain.workers.dev/api/db/products?id=123"
       "created_at": "2025-10-26 10:30:00",
       "updated_at": "2025-10-26 10:30:00"
     }
-  ],
-  "count": 1,
-  "active_table": "products_a"
+  ]
 }
 ```
 

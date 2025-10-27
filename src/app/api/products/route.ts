@@ -4,7 +4,19 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://your-worker-domain.workers.dev'
-    const apiUrl = `${baseUrl}/api/db/products`
+    // Forward selected query params (limit, page, order_by, order)
+    const urlObj = new URL(request.url)
+    const sp = urlObj.searchParams
+    const qs = new URLSearchParams()
+    const limit = sp.get('limit')
+    const page = sp.get('page')
+    const order_by = sp.get('order_by')
+    const order = sp.get('order')
+    if (limit) qs.set('limit', limit)
+    if (page) qs.set('page', page)
+    if (order_by) qs.set('order_by', order_by)
+    if (order) qs.set('order', order)
+    const apiUrl = `${baseUrl}/api/db/products${qs.toString() ? `?${qs.toString()}` : ''}`
 
     const response = await fetch(apiUrl, {
       method: 'GET',
