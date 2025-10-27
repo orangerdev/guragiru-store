@@ -1,18 +1,11 @@
 export const runtime = 'nodejs'
+import http from '@/services/http'
 import type { Product } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
-import http from '@/services/http'
 
 export async function GET(request: NextRequest) {
-  try {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
-    if (!baseUrl || baseUrl.includes('your-worker-domain')) {
-      console.error('API base URL is not configured. Set NEXT_PUBLIC_API_BASE_URL in wrangler.toml [vars].')
-      return NextResponse.json(
-        { error: 'API base URL not configured' },
-        { status: 500 }
-      )
-    }
+
     // Forward selected query params (limit, page, order_by, order)
     const urlObj = new URL(request.url)
     const sp = urlObj.searchParams
@@ -25,6 +18,16 @@ export async function GET(request: NextRequest) {
     if (page) qs.set('page', page)
     if (order_by) qs.set('order_by', order_by)
     if (order) qs.set('order', order)
+
+  try {
+    if (!baseUrl || baseUrl.includes('your-worker-domain')) {
+      console.error('API base URL is not configured. Set NEXT_PUBLIC_API_BASE_URL in wrangler.toml [vars].')
+      return NextResponse.json(
+        { error: 'API base URL not configured' },
+        { status: 500 }
+      )
+    }
+
     const apiUrl = `${baseUrl}/api/db/products${qs.toString() ? `?${qs.toString()}` : ''}`
 
     // Use axios with cache (1 hour TTL) + request timeout (15s)
@@ -79,7 +82,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to fetch products',
-        message
+        message,
+        apiUrl: `/api/db/products${qs.toString() ? `?${qs.toString()}` : ''}`
       },
       { status: isAbort ? 504 : 500 }
     )
