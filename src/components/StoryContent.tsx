@@ -69,12 +69,13 @@ function StoryContent({ product, onTap, setHolding }: StoryContentProps) {
     return getOptimizedGoogleDriveUrl(url)
   }
 
-  // Measure description height to determine collapse behavior (> 30% viewport height)
+  // Measure description height to determine collapse behavior (> 15% viewport height)
   useEffect(() => {
     const measure = () => {
       const el = descContainerRef.current
       if (!el) return
-      const maxPx = Math.round(window.innerHeight * 0.18)
+      // Cap description section to 15% of viewport height
+      const maxPx = Math.round(window.innerHeight * 0.15)
       const needsCollapse = el.scrollHeight > maxPx
       setCanCollapse(needsCollapse)
       setIsCollapsed(needsCollapse)
@@ -91,7 +92,7 @@ function StoryContent({ product, onTap, setHolding }: StoryContentProps) {
 
   return (
     <div 
-      className="relative w-full h-full cursor-pointer select-none"
+      className="relative w-full h-full max-h-screen md:max-h-none cursor-pointer select-none"
       onClick={onTap}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -103,7 +104,7 @@ function StoryContent({ product, onTap, setHolding }: StoryContentProps) {
       <div className="absolute inset-0">
         {product.asset_type === 'video' && product.asset_link ? (
           <video
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
             src={getOptimizedGoogleDriveUrl(product.asset_link)}
             autoPlay
             muted
@@ -122,7 +123,7 @@ function StoryContent({ product, onTap, setHolding }: StoryContentProps) {
             src={getOptimizedImageUrl(product.asset_link) || product.asset_link}
             alt={product.product_name}
             fill
-            className="object-cover"
+            className="object-cover object-center"
             priority
             onLoad={() => setImageLoading(false)}
             onError={(e) => {
@@ -168,7 +169,8 @@ function StoryContent({ product, onTap, setHolding }: StoryContentProps) {
               <div
                 ref={descContainerRef}
                 className={`text-white/90 text-sm leading-relaxed max-w-full ${isCollapsed ? 'overflow-hidden' : ''}`}
-                style={isCollapsed ? { maxHeight: '30vh' } : undefined}
+                // Limit description block to max 15% of viewport height when collapsed
+                style={isCollapsed ? { maxHeight: '15vh' } : undefined}
                 dangerouslySetInnerHTML={{ __html: formatDescription(product.description) }}
               />
 
