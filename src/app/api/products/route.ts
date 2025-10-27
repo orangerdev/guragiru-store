@@ -4,7 +4,7 @@ import type { Product } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+    const baseUrl = "https://shop-db.orangerdigiart.workers.dev"
 
     // Forward selected query params (limit, page, order_by, order)
     const urlObj = new URL(request.url)
