@@ -15,25 +15,32 @@ export default function ShopPage() {
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const isFetchingRef = useRef(false)
+  const requestedPagesRef = useRef<Set<number>>(new Set())
 
-  const loadPage = useCallback(async (p: number) => {
-    if (loading) return
+  const loadPage = useCallback(async (p: number, replace = false) => {
+    if (isFetchingRef.current) return
+    if (requestedPagesRef.current.has(p)) return
+    isFetchingRef.current = true
     setLoading(true)
     setError(null)
     try {
       const next = await apiService.getProducts({ limit: LIMIT, page: p, order_by: 'datetime', order: 'desc' })
-      setProducts(prev => (p === 1 ? next : [...prev, ...next]))
+      setProducts(prev => (replace ? next : [...prev, ...next]))
       setHasMore(next.length >= LIMIT)
+      requestedPagesRef.current.add(p)
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to load products'
       setError(msg)
     } finally {
+      isFetchingRef.current = false
       setLoading(false)
     }
-  }, [loading])
+  }, [])
 
   useEffect(() => {
-    loadPage(1)
+    // initial load
+    loadPage(1, true)
   }, [loadPage])
 
   useEffect(() => {
@@ -41,15 +48,17 @@ export default function ShopPage() {
     if (!el) return
     const observer = new IntersectionObserver((entries) => {
       const entry = entries[0]
-      if (entry.isIntersecting && !loading && hasMore) {
-        const nextPage = page + 1
-        setPage(nextPage)
-        loadPage(nextPage)
+      if (entry.isIntersecting && hasMore && !isFetchingRef.current) {
+        setPage(prev => {
+          const nextPage = prev + 1
+          loadPage(nextPage)
+          return nextPage
+        })
       }
     }, { root: null, rootMargin: '200px', threshold: 0 })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [page, loading, hasMore, loadPage])
+  }, [hasMore, loadPage])
 
   return (
     <main className="min-h-screen w-full bg-black text-white">
