@@ -1,8 +1,8 @@
 'use client'
 
-import type { Product } from '@/types'
 import { apiService } from '@/services/api'
 import { whatsappService } from '@/services/whatsapp'
+import type { Product } from '@/types'
 import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDrive'
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -113,7 +113,7 @@ function ProductCard({ product }: { product: Product }) {
     : undefined
 
   return (
-    <article className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+    <article className="overflow-hidden rounded-xl border border-white/10 bg-white/5 fade-in">
       <div className="relative aspect-[3/4] w-full bg-white/5">
         {src ? (
           <Image

@@ -8,7 +8,8 @@
   }
   
   body {
-    @apply bg-black text-white overflow-hidden;
+    /* Allow vertical scroll globally; prevent horizontal scroll only */
+    @apply bg-black text-white overflow-x-hidden;
   }
 }
 
@@ -39,5 +40,14 @@
   
   .whatsapp-button {
     @apply bg-whatsapp-primary text-white rounded-full px-6 py-3 font-medium active:bg-whatsapp-primary/80 transition-colors;
+  }
+
+  /* Simple fade-in animation used for product cards */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in {
+    animation: fade-in 300ms ease-out both;
   }
 }
