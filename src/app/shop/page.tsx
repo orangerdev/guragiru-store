@@ -132,7 +132,7 @@ export default function ShopPage() {
       {/* States */}
       {loading && products.length === 0 && (
         <section className="mx-auto max-w-md px-2 pb-16">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-3">
             {Array.from({ length: LIMIT }).map((_, i) => (
               <ShimmerCard key={i} />
             ))}
@@ -143,18 +143,15 @@ export default function ShopPage() {
         <div className="mx-auto max-w-md px-4 py-8 text-center text-red-400">{error}</div>
       )}
 
-      {/* Products grid - mobile only (2 columns) */}
+      {/* Products list - single column */}
       {!error && (
         <section className="mx-auto max-w-md px-2 pb-16">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-3">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
             {loading && products.length > 0 && (
-              <>
-                <ShimmerCard />
-                <ShimmerCard />
-              </>
+              <ShimmerCard />
             )}
           </div>
           <div ref={sentinelRef} className="h-10" />
@@ -171,6 +168,18 @@ function ProductCard({ product }: { product: Product }) {
   const src = product.asset_link
     ? getOptimizedGoogleDriveUrl(product.asset_link, product.asset_type)
     : undefined
+  const description = (product.description || '').trim()
+  const [expanded, setExpanded] = useState(false)
+  const [showToggle, setShowToggle] = useState(false)
+  const descRef = useRef<HTMLParagraphElement | null>(null)
+
+  useEffect(() => {
+    if (!descRef.current) return
+    // Measure overflow while collapsed (line-clamp-2 applied by default)
+    const el = descRef.current
+    const hasOverflow = el.scrollHeight > el.clientHeight + 1
+    setShowToggle(hasOverflow)
+  }, [description])
 
   return (
     <article className="overflow-hidden rounded-xl border border-white/10 bg-white/5 fade-in">
@@ -181,7 +190,7 @@ function ProductCard({ product }: { product: Product }) {
             alt={product.product_name}
             fill
             className="object-cover"
-            sizes="(max-width: 420px) 50vw, 200px"
+            sizes="(max-width: 420px) 100vw, 420px"
             unoptimized={isGoogleDriveUrl(src)}
             priority={false}
           />
@@ -196,6 +205,26 @@ function ProductCard({ product }: { product: Product }) {
         <h3 className="text-sm font-semibold leading-snug line-clamp-2 min-h-[2.5rem]">
           {product.product_name}
         </h3>
+
+        {description && (
+          <div className="space-y-1">
+            <p
+              ref={descRef}
+              className={`text-sm text-white/70 leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}
+            >
+              {description}
+            </p>
+            {showToggle && (
+              <button
+                type="button"
+                className="text-xs text-white/60 hover:text-white underline underline-offset-2"
+                onClick={() => setExpanded((v) => !v)}
+              >
+                {expanded ? 'Hide' : 'Show'}
+              </button>
+            )}
+          </div>
+        )}
 
         <button
           type="button"
