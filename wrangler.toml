@@ -5,11 +5,12 @@ main = ".open-next/worker.js"
 compatibility_date = "2025-03-25"
 compatibility_flags = ["nodejs_compat"]
 
-[routes]
-patterns = [
-	{ pattern = "guragiru.com", custom_domain = true },
-	{ pattern = "www.guragiru.com", custom_domain = true }
-]
+# Routes/custom domains are managed via Cloudflare Dashboard.
+# If you prefer config-as-code, replace the above with:
+# routes = [
+#   { pattern = "guragiru.com", custom_domain = true },
+#   { pattern = "www.guragiru.com", custom_domain = true }
+# ]
 
 [assets]
 directory = ".open-next/assets"
