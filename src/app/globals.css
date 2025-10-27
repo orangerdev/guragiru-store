@@ -50,4 +50,10 @@
   .fade-in {
     animation: fade-in 300ms ease-out both;
   }
+
+  /* Centered mobile shell for desktop/tablet while keeping mobile-first layout */
+  .mobile-shell {
+    @apply mx-auto min-h-screen w-full;
+    max-width: 420px; /* typical mobile width */
+  }
 }

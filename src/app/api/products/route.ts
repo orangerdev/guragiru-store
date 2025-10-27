@@ -1,3 +1,4 @@
+export const runtime = 'nodejs'
 import type { Product } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 

@@ -1,5 +1,9 @@
 import StoryContainer from '@/components/StoryContainer'
 
 export default function HomePage() {
-  return <StoryContainer />
+  return (
+    <div className="mobile-shell">
+      <StoryContainer />
+    </div>
+  )
 }

@@ -3,6 +3,7 @@
 import type { UseStoryResult } from '@/hooks/useStory'
 import { useSwipeGestures } from '@/hooks/useSwipeGestures'
 import type { MessageModalState, Product } from '@/types'
+import Link from 'next/link'
 import { useEffect } from 'react'
 import MessageModal from './MessageModal'
 import NavigationControls from './NavigationControls'
@@ -101,6 +102,21 @@ export default function StoryViewer({
         className="story-container"
         {...swipeHandlers}
       >
+        {/* Top-right CTA to full shop */}
+        <Link
+          href="/shop"
+          className="absolute top-8 right-4 z-30 text-sm font-medium px-3 py-1.5 rounded-full border border-white/30 bg-yellow-400 hover:bg-white/20 active:bg-white/25 backdrop-blur-sm transition-colors"
+          aria-label="Lihat Semua"
+          onClick={(e) => {
+            // Avoid interfering with swipe/tap handlers
+            e.stopPropagation()
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation()
+          }}
+        >
+          Lihat Semua
+        </Link>
         {/* Progress Indicators */}
         <StoryProgressBar 
           products={products}

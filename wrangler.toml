@@ -1,0 +1,22 @@
+# Cloudflare Workers configuration for Next.js via OpenNext adapter
+
+name = "guragiru-storefront"
+main = ".open-next/worker.js"
+compatibility_date = "2025-03-25"
+compatibility_flags = ["nodejs_compat"]
+
+[routes]
+patterns = [
+	{ pattern = "guragiru.com", custom_domain = true },
+	{ pattern = "www.guragiru.com", custom_domain = true }
+]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[vars]
+# Public runtime config injected at build/deploy time
+NEXT_PUBLIC_API_BASE_URL = "https://your-worker-domain.workers.dev"
+NEXT_PUBLIC_WHATSAPP_PHONE = ""
+NEXT_PUBLIC_WHATSAPP_DEFAULT_MESSAGE = ""

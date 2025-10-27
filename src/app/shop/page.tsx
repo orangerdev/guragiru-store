@@ -17,6 +17,8 @@ export default function ShopPage() {
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const isFetchingRef = useRef(false)
   const requestedPagesRef = useRef<Set<number>>(new Set())
+  const [isCompact, setIsCompact] = useState(false)
+  const rafRef = useRef<number | null>(null)
 
   const loadPage = useCallback(async (p: number, replace = false) => {
     if (isFetchingRef.current) return
@@ -25,9 +27,11 @@ export default function ShopPage() {
     setLoading(true)
     setError(null)
     try {
-      const next = await apiService.getProducts({ limit: LIMIT, page: p, order_by: 'datetime', order: 'desc' })
-      setProducts(prev => (replace ? next : [...prev, ...next]))
-      setHasMore(next.length >= LIMIT)
+  const next = await apiService.getProducts({ limit: LIMIT, page: p, order_by: 'datetime', order: 'desc' })
+  setProducts(prev => (replace ? next : [...prev, ...next]))
+  // Because the API route filters out non-image items, a page can return fewer
+  // than LIMIT while more pages still exist. Continue until an empty page.
+  setHasMore(next.length > 0)
       requestedPagesRef.current.add(p)
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to load products'
@@ -42,6 +46,25 @@ export default function ShopPage() {
     // initial load
     loadPage(1, true)
   }, [loadPage])
+
+  // Compact header on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (rafRef.current) return
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = null
+        const compact = window.scrollY > 16
+        setIsCompact(prev => (prev !== compact ? compact : prev))
+      })
+    }
+    // set initial state in case user reloads mid-scroll
+    setIsCompact(window.scrollY > 16)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   useEffect(() => {
     const el = sentinelRef.current
@@ -61,14 +84,42 @@ export default function ShopPage() {
   }, [hasMore, loadPage])
 
   return (
-    <main className="min-h-screen w-full bg-black text-white">
+    <main className="mobile-shell bg-black text-white">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60">
-        <div className="mx-auto max-w-md px-4 py-3 flex items-center justify-center">
-          <div className="relative w-10 h-10 overflow-hidden rounded-full border border-white/20">
-            <Image src="/assets/img/logo.webp" alt="Store Logo" fill className="object-cover" sizes="40px" priority />
+        {/* Expanded header (default) */}
+        {!isCompact && (
+          <div className="mx-auto max-w-md px-4 py-5 flex flex-col items-center justify-center transition-all">
+            <div className="relative w-[120px] h-[120px] overflow-hidden rounded-full border border-white/20 shadow-lg">
+              <Image src="/assets/img/logo.webp" alt="Gura Giru" fill className="object-cover" sizes="120px" priority />
+            </div>
+            <a
+              href="https://www.instagram.com/guragirujastip/"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 text-white/80 text-sm hover:text-white underline-offset-4 hover:underline"
+            >
+              @guragirujastip
+            </a>
           </div>
-        </div>
+        )}
+
+        {/* Compact header when scrolled */}
+        {isCompact && (
+          <div className="mx-auto max-w-md px-4 py-2 flex items-center justify-start gap-3 transition-all">
+            <div className="relative w-10 h-10 overflow-hidden rounded-full border border-white/20">
+              <Image src="/assets/img/logo.webp" alt="Gura Giru" fill className="object-cover" sizes="40px" priority />
+            </div>
+            <a
+              href="https://www.instagram.com/guragirujastip/"
+              target="_blank"
+              rel="noreferrer"
+              className="text-base font-medium text-white hover:opacity-90"
+            >
+              guragiru jastip
+            </a>
+          </div>
+        )}
       </header>
 
       {/* Store description */}
