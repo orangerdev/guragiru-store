@@ -4,7 +4,14 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://your-worker-domain.workers.dev'
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+    if (!baseUrl || baseUrl.includes('your-worker-domain')) {
+      console.error('API base URL is not configured. Set NEXT_PUBLIC_API_BASE_URL in wrangler.toml [vars].')
+      return NextResponse.json(
+        { error: 'API base URL not configured' },
+        { status: 500 }
+      )
+    }
     // Forward selected query params (limit, page, order_by, order)
     const urlObj = new URL(request.url)
     const sp = urlObj.searchParams
@@ -19,13 +26,19 @@ export async function GET(request: NextRequest) {
     if (order) qs.set('order', order)
     const apiUrl = `${baseUrl}/api/db/products${qs.toString() ? `?${qs.toString()}` : ''}`
 
+    // Add a timeout so we fail fast instead of hanging until CF 522
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
+    console.log('Fetching upstream API:', apiUrl)
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
       // Server-side fetch, no CORS issues
     })
+    clearTimeout(timeout)
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
@@ -39,9 +52,9 @@ export async function GET(request: NextRequest) {
       [key: string]: unknown
     }
 
-    const responseData = (await response.json()) as ProductsApiResponse
+  const responseData = (await response.json()) as ProductsApiResponse
     
-    console.log('API Response:', responseData)
+  console.log('Upstream responded. Keys:', Object.keys(responseData || {}))
     
     // Transform products to handle Google Drive URLs
     let products: Product[] = []
@@ -66,12 +79,15 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching products:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    // Surface abort/timeout to caller for better debugging in UI/logs
+    const isAbort = message.includes('aborted') || message.includes('signal')
     return NextResponse.json(
       { 
         error: 'Failed to fetch products',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message
       },
-      { status: 500 }
+      { status: isAbort ? 504 : 500 }
     )
   }
 }
