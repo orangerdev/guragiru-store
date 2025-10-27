@@ -31,7 +31,15 @@ export async function GET(request: NextRequest) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const responseData = await response.json()
+    // Narrow the unknown JSON type into an expected shape from our worker API
+    type ProductsApiResponse = {
+      data?: Product[]
+      active_table?: string
+      // allow additional fields without failing the type
+      [key: string]: unknown
+    }
+
+    const responseData = (await response.json()) as ProductsApiResponse
     
     console.log('API Response:', responseData)
     
@@ -39,7 +47,7 @@ export async function GET(request: NextRequest) {
     let products: Product[] = []
     
     // The response format has 'data' property for products
-    if (responseData.data && Array.isArray(responseData.data)) {
+  if (Array.isArray(responseData.data)) {
       // Filter only products with image assets
       const imageProducts = responseData.data.filter((product: Product) => 
         product.asset_type === 'image' && product.asset_link
