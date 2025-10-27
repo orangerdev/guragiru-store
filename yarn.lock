@@ -5178,6 +5178,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios-cache-interceptor@npm:^1.8.3":
+  version: 1.8.3
+  resolution: "axios-cache-interceptor@npm:1.8.3"
+  dependencies:
+    cache-parser: "npm:1.2.5"
+    fast-defer: "npm:1.1.8"
+    object-code: "npm:1.3.3"
+  peerDependencies:
+    axios: ^1
+  checksum: 10c0/a106b3525d54bab6658e4b7a77c3b963296d0c7c24863800f9b04d671c2173545f53b9d7369bb89a03506c38310ade048cdd7025a9e00422ab2e4826ac39b85b
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.12.2":
+  version: 1.12.2
+  resolution: "axios@npm:1.12.2"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.4"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10c0/80b063e318cf05cd33a4d991cea0162f3573481946f9129efb7766f38fde4c061c34f41a93a9f9521f02b7c9565ccbc197c099b0186543ac84a24580017adfed
+  languageName: node
+  linkType: hard
+
 "axobject-query@npm:^4.1.0":
   version: 4.1.0
   resolution: "axobject-query@npm:4.1.0"
@@ -5343,6 +5367,13 @@ __metadata:
     tar: "npm:^7.4.3"
     unique-filename: "npm:^4.0.0"
   checksum: 10c0/01f2134e1bd7d3ab68be851df96c8d63b492b1853b67f2eecb2c37bb682d37cb70bb858a16f2f0554d3c0071be6dfe21456a1ff6fa4b7eed996570d6a25ffe9c
+  languageName: node
+  linkType: hard
+
+"cache-parser@npm:1.2.5":
+  version: 1.2.5
+  resolution: "cache-parser@npm:1.2.5"
+  checksum: 10c0/08ef9b465a0af87565f12448a2c250934f4c02f1247a9c519759139a0e2db5584f45ffa8401ce721f7e5a8f8ba1faf3ddc1e99c29e5e93aba01f7e1f4ee8ef9a
   languageName: node
   linkType: hard
 
@@ -7271,6 +7302,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-defer@npm:1.1.8":
+  version: 1.1.8
+  resolution: "fast-defer@npm:1.1.8"
+  checksum: 10c0/4537cf81ce3e1505adba01dfe232231271162c8365427b360e0e86c8e4bf65f08d9e6ced1bd063fbafb48376f2ff152d1cad3cb25237126492921a15ce203e88
+  languageName: node
+  linkType: hard
+
 "fast-glob@npm:3.3.1":
   version: 3.3.1
   resolution: "fast-glob@npm:3.3.1"
@@ -7427,6 +7465,16 @@ __metadata:
   version: 3.3.3
   resolution: "flatted@npm:3.3.3"
   checksum: 10c0/e957a1c6b0254aa15b8cce8533e24165abd98fadc98575db082b786b5da1b7d72062b81bfdcd1da2f4d46b6ed93bec2434e62333e9b4261d79ef2e75a10dd538
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.15.6":
+  version: 1.15.11
+  resolution: "follow-redirects@npm:1.15.11"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: 10c0/d301f430542520a54058d4aeeb453233c564aaccac835d29d15e050beb33f339ad67d9bddbce01739c5dc46a6716dbe3d9d0d5134b1ca203effa11a7ef092343
   languageName: node
   linkType: hard
 
@@ -7825,6 +7873,8 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^7.16.1"
     "@typescript-eslint/parser": "npm:^7.16.1"
     autoprefixer: "npm:^10.4.19"
+    axios: "npm:^1.12.2"
+    axios-cache-interceptor: "npm:^1.8.3"
     critters: "npm:^0.0.25"
     esbuild: "npm:^0.23.0"
     eslint: "npm:^8.57.0"
@@ -9280,6 +9330,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"object-code@npm:1.3.3":
+  version: 1.3.3
+  resolution: "object-code@npm:1.3.3"
+  checksum: 10c0/804650eb9b7f23f612c5ba7afbfccc0406f622d701491a690d0492f6e01252096cfba85186fd39883fda6b0e04d623aa8d9485395830223af2395df32d55a75e
+  languageName: node
+  linkType: hard
+
 "object-hash@npm:^3.0.0":
   version: 3.0.0
   resolution: "object-hash@npm:3.0.0"
@@ -9857,6 +9914,13 @@ __metadata:
     forwarded: "npm:0.2.0"
     ipaddr.js: "npm:1.9.1"
   checksum: 10c0/c3eed999781a35f7fd935f398b6d8920b6fb00bbc14287bc6de78128ccc1a02c89b95b56742bf7cf0362cc333c61d138532049c7dedc7a328ef13343eff81210
+  languageName: node
+  linkType: hard
+
+"proxy-from-env@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "proxy-from-env@npm:1.1.0"
+  checksum: 10c0/fe7dd8b1bdbbbea18d1459107729c3e4a2243ca870d26d34c2c1bcd3e4425b7bcc5112362df2d93cc7fb9746f6142b5e272fd1cc5c86ddf8580175186f6ad42b
   languageName: node
   linkType: hard
 

@@ -1,6 +1,7 @@
 export const runtime = 'nodejs'
 import type { Product } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
+import http from '@/services/http'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,22 +27,15 @@ export async function GET(request: NextRequest) {
     if (order) qs.set('order', order)
     const apiUrl = `${baseUrl}/api/db/products${qs.toString() ? `?${qs.toString()}` : ''}`
 
-    // Add a timeout so we fail fast instead of hanging until CF 522
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000)
-    console.log('Fetching upstream API:', apiUrl)
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-      // Server-side fetch, no CORS issues
+    // Use axios with cache (1 hour TTL) + request timeout (15s)
+    console.log('Fetching upstream API (axios cached):', apiUrl)
+    const axRes = await http.get(apiUrl, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 15000,
     })
-    clearTimeout(timeout)
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    if (axRes.status < 200 || axRes.status >= 300) {
+      throw new Error(`HTTP error! status: ${axRes.status}`)
     }
 
     // Narrow the unknown JSON type into an expected shape from our worker API
@@ -52,7 +46,7 @@ export async function GET(request: NextRequest) {
       [key: string]: unknown
     }
 
-  const responseData = (await response.json()) as ProductsApiResponse
+  const responseData = axRes.data as ProductsApiResponse
     
   console.log('Upstream responded. Keys:', Object.keys(responseData || {}))
     
