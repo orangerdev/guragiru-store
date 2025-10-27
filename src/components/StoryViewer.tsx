@@ -23,6 +23,7 @@ export default function StoryViewer({
   setMessageModal 
 }: StoryViewerProps) {
   const currentProduct = products[story.currentIndex]
+    const { goToNext, goToPrevious, currentIndex, progress, isPlaying, isPaused, setHolding } = story
 
   // Swipe gestures for mobile
   const swipeHandlers = useSwipeGestures({
@@ -39,30 +40,40 @@ export default function StoryViewer({
     threshold: 50
   })
 
-  // Keyboard navigation
+  // Keyboard navigation (ignore when typing in inputs/textarea or when modal open)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      const isEditable = !!(
+        target && (
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          (target as HTMLElement).isContentEditable
+        )
+      )
+
+      // Do not hijack keys when modal is open or user is typing in an editable element
+      if (messageModal.isOpen || isEditable) return
+
       switch (event.key) {
         case 'ArrowLeft':
           event.preventDefault()
-          story.goToPrevious()
+          goToPrevious()
           break
         case 'ArrowRight':
         case ' ':
           event.preventDefault()
-          story.goToNext()
+          goToNext()
           break
         case 'Escape':
-          if (messageModal.isOpen) {
-            setMessageModal({ ...messageModal, isOpen: false })
-          }
+          // Nothing: handled when modal is open in MessageModal
           break
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [story, messageModal, setMessageModal])
+  }, [goToNext, goToPrevious, messageModal.isOpen])
 
   // Prevent context menu on long press
   useEffect(() => {
@@ -93,21 +104,25 @@ export default function StoryViewer({
         {/* Progress Indicators */}
         <StoryProgressBar 
           products={products}
-          currentIndex={story.currentIndex}
-          progress={story.progress}
+          currentIndex={currentIndex}
+          progress={progress}
         />
 
         {/* Story Content */}
         <StoryContent 
           product={currentProduct}
           onTap={handleStoryTap}
-          story={story}
+          setHolding={setHolding}
         />
 
         {/* Navigation Controls */}
         <NavigationControls 
-          story={story}
+          isPlaying={isPlaying}
+          isPaused={isPaused}
+          onPrev={goToPrevious}
+          onNext={goToNext}
           onMessageTap={handleStoryTap}
+          alwaysVisible={!isPlaying}
         />
       </div>
 

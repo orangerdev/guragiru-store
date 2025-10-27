@@ -18,6 +18,8 @@ export default function StoryContainer() {
   const story = useStory({
     products,
     autoPlayDuration: 5000,
+    autoPlay: false,
+    storageKey: 'storefront:lastSlideIndex',
     onStoryEnd: () => {
       // Loop back to first story or show end screen
       story.goToIndex(0)

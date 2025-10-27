@@ -1,37 +1,34 @@
 'use client'
 
-import type { UseStoryResult } from '@/hooks/useStory'
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 
 interface NavigationControlsProps {
-  story: UseStoryResult
+  isPlaying: boolean
+  isPaused: boolean
+  onPrev: () => void
+  onNext: () => void
   onMessageTap: () => void
+  alwaysVisible?: boolean
 }
 
-export default function NavigationControls({ story, onMessageTap }: NavigationControlsProps) {
-  const [showControls, setShowControls] = useState(false)
+function NavigationControls({ isPlaying, isPaused, onPrev, onNext, onMessageTap, alwaysVisible = false }: NavigationControlsProps) {
+  const [showControls, setShowControls] = useState(alwaysVisible)
   const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null)
 
   // Show controls on interaction, hide after delay
   const handleInteraction = () => {
     setShowControls(true)
-    
-    if (hideTimeout) {
-      clearTimeout(hideTimeout)
-    }
-    
+    if (alwaysVisible) return
+    if (hideTimeout) clearTimeout(hideTimeout)
     const timeout = setTimeout(() => {
       setShowControls(false)
     }, 3000)
-    
     setHideTimeout(timeout)
   }
 
   useEffect(() => {
     return () => {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout)
-      }
+      if (hideTimeout) clearTimeout(hideTimeout)
     }
   }, [hideTimeout])
 
@@ -44,12 +41,12 @@ export default function NavigationControls({ story, onMessageTap }: NavigationCo
           className="w-1/3 h-full flex items-center justify-start pl-4 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation()
-            story.goToPrevious()
+            onPrev()
             handleInteraction()
           }}
           onTouchEnd={(e) => {
             e.stopPropagation()
-            story.goToPrevious()
+            onPrev()
             handleInteraction()
           }}
         >
@@ -90,12 +87,12 @@ export default function NavigationControls({ story, onMessageTap }: NavigationCo
           className="w-1/3 h-full flex items-center justify-end pr-4 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation()
-            story.goToNext()
+            onNext()
             handleInteraction()
           }}
           onTouchEnd={(e) => {
             e.stopPropagation()
-            story.goToNext()
+            onNext()
             handleInteraction()
           }}
         >
@@ -109,8 +106,8 @@ export default function NavigationControls({ story, onMessageTap }: NavigationCo
         </div>
       </div>
 
-      {/* Play/Pause indicator */}
-      {!story.isPlaying && (
+      {/* Play/Pause indicator (hide when controls are always visible i.e., autoplay off) */}
+      {!alwaysVisible && !isPlaying && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <div className="bg-black/50 rounded-full p-4 backdrop-blur-sm">
             <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -121,7 +118,7 @@ export default function NavigationControls({ story, onMessageTap }: NavigationCo
       )}
 
       {/* Pause indicator when holding */}
-      {story.isPaused && story.isPlaying && (
+      {!alwaysVisible && isPaused && isPlaying && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <div className="bg-black/50 rounded-full p-4 backdrop-blur-sm">
             <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -133,3 +130,5 @@ export default function NavigationControls({ story, onMessageTap }: NavigationCo
     </>
   )
 }
+
+export default memo(NavigationControls)

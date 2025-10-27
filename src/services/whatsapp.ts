@@ -32,7 +32,6 @@ class WhatsAppService {
     const productInfo = [
       `*${product.product_name}*`,
       product.description ? this.formatWhatsAppText(product.description) : '',
-      product.asset_link ? `Link: ${product.asset_link}` : ''
     ].filter(Boolean).join('\n\n')
 
     const fullMessage = [

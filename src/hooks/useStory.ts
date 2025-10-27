@@ -18,13 +18,17 @@ export interface UseStoryResult {
 interface UseStoryOptions {
   products: Product[]
   autoPlayDuration?: number
+  autoPlay?: boolean
   onStoryEnd?: () => void
+  storageKey?: string
 }
 
 export function useStory({ 
   products, 
   autoPlayDuration = 5000,
-  onStoryEnd 
+  autoPlay = true,
+  onStoryEnd,
+  storageKey
 }: UseStoryOptions): UseStoryResult {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -35,6 +39,7 @@ export function useStory({
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const startTimeRef = useRef<number>(0)
   const pausedTimeRef = useRef<number>(0)
+  const initializedFromStorageRef = useRef(false)
 
   const clearTimer = useCallback(() => {
     if (intervalRef.current) {
@@ -127,12 +132,51 @@ export function useStory({
     }
   }, [currentIndex, isPlaying])
 
-  // Start playing when products are loaded
+  // Start playing when products are loaded (only if autoplay enabled)
   useEffect(() => {
+    if (!autoPlay) return
     if (products.length > 0 && !isPlaying) {
       play()
     }
-  }, [products.length, isPlaying, play])
+  }, [products.length, isPlaying, play, autoPlay])
+
+  // Initialize current index from localStorage when products are ready
+  useEffect(() => {
+    if (!storageKey) return
+    if (initializedFromStorageRef.current) return
+    if (products.length === 0) return
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
+      const parsed = raw != null ? parseInt(raw, 10) : NaN
+      if (!Number.isNaN(parsed)) {
+        const clamped = Math.max(0, Math.min(products.length - 1, parsed))
+        setCurrentIndex(clamped)
+      }
+    } catch (e) {
+      // ignore storage errors
+    } finally {
+      initializedFromStorageRef.current = true
+    }
+  }, [products.length, storageKey])
+
+  // Persist current index to localStorage
+  useEffect(() => {
+    if (!storageKey) return
+    if (products.length === 0) return
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(storageKey, String(currentIndex))
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, [currentIndex, products.length, storageKey])
+
+  // Clamp current index if products length changed and index out of bounds
+  useEffect(() => {
+    if (products.length === 0) return
+    setCurrentIndex((idx) => Math.max(0, Math.min(products.length - 1, idx)))
+  }, [products.length])
 
   // Cleanup on unmount
   useEffect(() => {

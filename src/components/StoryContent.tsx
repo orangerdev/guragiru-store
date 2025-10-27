@@ -1,35 +1,43 @@
 'use client'
 
-import type { UseStoryResult } from '@/hooks/useStory'
 import type { Product } from '@/types'
 import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDrive'
 import Image from 'next/image'
-import { useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 
 interface StoryContentProps {
   product: Product
   onTap: () => void
-  story: UseStoryResult
+  setHolding: (holding: boolean) => void
 }
 
-export default function StoryContent({ product, onTap, story }: StoryContentProps) {
+function StoryContent({ product, onTap, setHolding }: StoryContentProps) {
   const [imageLoading, setImageLoading] = useState(true)
   const [imageError, setImageError] = useState(false)
+  const descContainerRef = useRef<HTMLDivElement>(null)
+  const [canCollapse, setCanCollapse] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  // Reset loading state when product changes to avoid stale state artifacts
+  useEffect(() => {
+    setImageLoading(true)
+    setImageError(false)
+  }, [product.asset_link, product.asset_type])
 
   const handleTouchStart = () => {
-    story.setHolding(true)
+    setHolding(true)
   }
 
   const handleTouchEnd = () => {
-    story.setHolding(false)
+    setHolding(false)
   }
 
   const handleMouseDown = () => {
-    story.setHolding(true)
+    setHolding(true)
   }
 
   const handleMouseUp = () => {
-    story.setHolding(false)
+    setHolding(false)
   }
 
   const formatPrice = (price?: string | number) => {
@@ -60,6 +68,26 @@ export default function StoryContent({ product, onTap, story }: StoryContentProp
     if (!url) return url
     return getOptimizedGoogleDriveUrl(url)
   }
+
+  // Measure description height to determine collapse behavior (> 30% viewport height)
+  useEffect(() => {
+    const measure = () => {
+      const el = descContainerRef.current
+      if (!el) return
+      const maxPx = Math.round(window.innerHeight * 0.18)
+      const needsCollapse = el.scrollHeight > maxPx
+      setCanCollapse(needsCollapse)
+      setIsCollapsed(needsCollapse)
+    }
+
+    // Give the browser a tick to render innerHTML before measuring
+    const id = window.setTimeout(measure, 0)
+    window.addEventListener('resize', measure)
+    return () => {
+      window.clearTimeout(id)
+      window.removeEventListener('resize', measure)
+    }
+  }, [product.description])
 
   return (
     <div 
@@ -136,22 +164,55 @@ export default function StoryContent({ product, onTap, story }: StoryContentProp
 
           {/* Product Description */}
           {product.description && (
-            <div 
-              className="text-white/90 text-sm leading-relaxed max-w-full"
-              dangerouslySetInnerHTML={{ 
-                __html: formatDescription(product.description) 
-              }}
-            />
+            <div className="relative">
+              <div
+                ref={descContainerRef}
+                className={`text-white/90 text-sm leading-relaxed max-w-full ${isCollapsed ? 'overflow-hidden' : ''}`}
+                style={isCollapsed ? { maxHeight: '30vh' } : undefined}
+                dangerouslySetInnerHTML={{ __html: formatDescription(product.description) }}
+              />
+
+              {canCollapse && isCollapsed && (
+                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent" />
+              )}
+
+              {canCollapse && (
+                <button
+                  type="button"
+                  className="mt-2 text-xs text-white/70 underline underline-offset-2"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsCollapsed((v) => !v)
+                  }}
+                  aria-expanded={!isCollapsed}
+                >
+                  {isCollapsed ? 'Show more' : 'Show less'}
+                </button>
+              )}
+            </div>
           )}
 
           {/* Price (if available in description or as separate field) */}
           {/* This would need to be extracted from description or added as separate field */}
           
-          {/* Action hint */}
-          <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/20">
-            <div className="text-white/60 text-xs">
-              Tap to send message
-            </div>
+          {/* Action hint - clickable CTA area */}
+          <div
+            className="flex items-center justify-between mt-4 pt-2 border-t border-white/20 cursor-pointer select-none"
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation()
+              onTap()
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                e.stopPropagation()
+                onTap()
+              }
+            }}
+          >
+            <div className="text-white/60 text-xs">Tap to send message</div>
             <div className="flex items-center text-whatsapp-primary">
               <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.785"/>
@@ -164,3 +225,5 @@ export default function StoryContent({ product, onTap, story }: StoryContentProp
     </div>
   )
 }
+
+export default memo(StoryContent)
