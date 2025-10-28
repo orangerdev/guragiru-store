@@ -1,4 +1,5 @@
 import type { Product, WhatsAppConfig } from '@/types'
+import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDrive'
 
 class WhatsAppService {
   private config: WhatsAppConfig
@@ -29,10 +30,24 @@ class WhatsAppService {
     const { phoneNumber, defaultMessage } = this.config
     
     // Build message components
-    const productInfo = [
-      `*${product.product_name}*`,
-      product.description ? this.formatWhatsAppText(product.description) : '',
-    ].filter(Boolean).join('\n\n')
+    const lines: string[] = []
+    // Title
+    lines.push(`*${product.product_name}*`)
+
+    // Description
+    if (product.description) {
+      lines.push(this.formatWhatsAppText(product.description))
+    }
+
+    // Image URL (only if asset is image)
+    if (product.asset_type === 'image' && product.asset_link) {
+      const imageUrl = isGoogleDriveUrl(product.asset_link)
+        ? getOptimizedGoogleDriveUrl(product.asset_link, 'image')
+        : product.asset_link
+      lines.push(`Gambar: ${imageUrl}`)
+    }
+
+    const productInfo = lines.filter(Boolean).join('\n\n')
 
     const fullMessage = [
       defaultMessage,
