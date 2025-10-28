@@ -6,7 +6,7 @@ class WhatsAppService {
 
   constructor() {
     this.config = {
-      phoneNumber: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '6281234567890',
+      phoneNumber: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '62811984666',
       defaultMessage: process.env.NEXT_PUBLIC_WHATSAPP_DEFAULT_MESSAGE || 'Halo, saya tertarik dengan produk ini:'
     }
   }
