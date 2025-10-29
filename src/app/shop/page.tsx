@@ -6,6 +6,9 @@ import type { Product } from '@/types'
 import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDrive'
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCart } from '@/hooks/useCart'
+import FloatingCartButton from '@/components/FloatingCartButton'
+import ProductModal from '@/components/ProductModal'
 
 export default function ShopPage() {
   const LIMIT = 10
@@ -18,7 +21,12 @@ export default function ShopPage() {
   const isFetchingRef = useRef(false)
   const requestedPagesRef = useRef<Set<number>>(new Set())
   const [isCompact, setIsCompact] = useState(false)
+  // Toggle between 1 and 2 columns (default: 2 cols)
+  const [twoCols, setTwoCols] = useState(true)
   const rafRef = useRef<number | null>(null)
+  const cart = useCart()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalProduct, setModalProduct] = useState<Product | undefined>(undefined)
 
   const loadPage = useCallback(async (p: number, replace = false) => {
     if (isFetchingRef.current) return
@@ -86,7 +94,34 @@ export default function ShopPage() {
   return (
     <main className="mobile-shell bg-black text-white">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60">
+  <header className="sticky top-0 z-30 bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60">
+        {/* Right controls */}
+        <div className="absolute right-3 top-3 flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Toggle product columns"
+            className="inline-flex items-center justify-center rounded-md border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors h-9 px-2"
+            onClick={() => setTwoCols(v => !v)}
+          >
+            <div className="flex items-center gap-1">
+              {twoCols ? (
+                // Icon for 1-column view (when active in 2-col)
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/>
+                  <line x1="8" y1="4.5" x2="8" y2="19.5" />
+                </svg>
+              ) : (
+                // Icon for 2-columns view
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/>
+                  <line x1="8" y1="4.5" x2="8" y2="19.5" />
+                  <line x1="16" y1="4.5" x2="16" y2="19.5" />
+                </svg>
+              )}
+              <span className="text-xs font-medium leading-none">{twoCols ? '1 Col' : '2 Col'}</span>
+            </div>
+          </button>
+        </div>
         {/* Expanded header (default) */}
         {!isCompact && (
           <div className="mx-auto max-w-md px-4 py-5 flex flex-col items-center justify-center transition-all">
@@ -132,7 +167,7 @@ export default function ShopPage() {
       {/* States */}
       {loading && products.length === 0 && (
         <section className="mx-auto max-w-md px-2 pb-16">
-          <div className="grid grid-cols-1 gap-3">
+          <div className={`grid ${twoCols ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
             {Array.from({ length: LIMIT }).map((_, i) => (
               <ShimmerCard key={i} />
             ))}
@@ -143,12 +178,22 @@ export default function ShopPage() {
         <div className="mx-auto max-w-md px-4 py-8 text-center text-red-400">{error}</div>
       )}
 
-      {/* Products list - single column */}
+      {/* Products list */}
       {!error && (
         <section className="mx-auto max-w-md px-2 pb-16">
-          <div className="grid grid-cols-1 gap-3">
+          <div className={`grid ${twoCols ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
             {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard
+                key={p.id}
+                product={p}
+                showDescription={true}
+                inCart={cart.isInCart(p.id)}
+                onToggleCart={() => cart.toggle(p)}
+                onOpenModal={() => {
+                  setModalProduct(p)
+                  setModalOpen(true)
+                }}
+              />
             ))}
             {loading && products.length > 0 && (
               <ShimmerCard />
@@ -160,11 +205,26 @@ export default function ShopPage() {
           )}
         </section>
       )}
+
+      {/* Floating cart button */}
+      <FloatingCartButton
+        count={cart.count}
+        onClick={() => cart.items.length && whatsappService.sendCartToWhatsApp(cart.items)}
+      />
+
+      {/* Product Modal */}
+      <ProductModal
+        open={modalOpen}
+        product={modalProduct}
+        inCart={modalProduct ? cart.isInCart(modalProduct.id) : false}
+        onClose={() => setModalOpen(false)}
+        onToggleCart={() => modalProduct && cart.toggle(modalProduct)}
+      />
     </main>
   )
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, showDescription, inCart, onToggleCart, onOpenModal }: { product: Product; showDescription: boolean; inCart: boolean; onToggleCart: () => void; onOpenModal: () => void }) {
   const src = product.asset_link
     ? getOptimizedGoogleDriveUrl(product.asset_link, product.asset_type)
     : undefined
@@ -172,6 +232,7 @@ function ProductCard({ product }: { product: Product }) {
   const [expanded, setExpanded] = useState(false)
   const [showToggle, setShowToggle] = useState(false)
   const descRef = useRef<HTMLParagraphElement | null>(null)
+  const [justAdded, setJustAdded] = useState(false)
 
   useEffect(() => {
     if (!descRef.current) return
@@ -183,7 +244,7 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <article className="overflow-hidden rounded-xl border border-white/10 bg-white/5 fade-in">
-      <div className="relative aspect-[3/4] w-full bg-white/5">
+      <button type="button" onClick={onOpenModal} className="group relative aspect-[3/4] w-full bg-white/5 text-left">
         {src ? (
           <Image
             src={src}
@@ -199,18 +260,33 @@ function ProductCard({ product }: { product: Product }) {
             No image
           </div>
         )}
-      </div>
+        {/* Zoom hint icon */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="rounded-full bg-black/40 border border-white/20 p-2 text-white opacity-80 group-hover:opacity-100 transition-opacity">
+            <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+        </div>
+        {/* Added badge (temporary) */}
+        <span
+          className={`absolute top-2 left-2 rounded-full bg-whatsapp-primary text-white text-[10px] uppercase tracking-wide px-2 py-1 shadow transition-all duration-300 ${justAdded ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
+        >
+          Added
+        </span>
+      </button>
 
-      <div className="p-3 space-y-2">
-        <h3 className="text-sm font-semibold leading-snug line-clamp-2 min-h-[2.5rem]">
+      <div className="p-3 flex flex-col gap-2 min-h-[132px]">
+        <h3 className="text-xs font-semibold leading-snug line-clamp-2">
           {product.product_name}
         </h3>
 
-        {description && (
+        {showDescription && description && (
           <div className="space-y-1">
             <p
               ref={descRef}
-              className={`text-sm text-white/70 leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}
+              className={`text-xs text-white/70 leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}
             >
               {description}
             </p>
@@ -228,13 +304,32 @@ function ProductCard({ product }: { product: Product }) {
 
         <button
           type="button"
-          className="w-full whatsapp-button flex items-center justify-center gap-2 text-sm py-2"
-          onClick={() => whatsappService.sendToWhatsApp(product)}
+          className={`w-full flex items-center justify-center gap-2 text-sm py-2 mt-auto rounded-full font-medium transition-all ${inCart ? 'bg-emerald-700 text-white active:bg-emerald-600' : 'bg-whatsapp-primary text-white active:bg-whatsapp-primary/80'}`}
+          onClick={() => {
+            if (!inCart) {
+              setJustAdded(true)
+              setTimeout(() => setJustAdded(false), 1200)
+            }
+            onToggleCart()
+          }}
         >
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/>
-          </svg>
-          WhatsApp
+          {inCart ? (
+            <>
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+              <span>In Cart</span>
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12" y2="16" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+              </svg>
+              <span>Add To Cart</span>
+            </>
+          )}
         </button>
       </div>
     </article>
