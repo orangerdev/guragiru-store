@@ -1,9 +1,5 @@
-import StoryContainer from '@/components/StoryContainer'
+import { redirect } from 'next/navigation'
 
 export default function HomePage() {
-  return (
-    <div className="mobile-shell">
-      <StoryContainer />
-    </div>
-  )
+  redirect('/shop')
 }
