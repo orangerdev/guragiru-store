@@ -1,9 +1,9 @@
 "use client"
 
-import Image from 'next/image'
-import React, { useEffect, useState } from 'react'
 import type { Product } from '@/types'
 import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDrive'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
 
 interface Props {
   open: boolean
@@ -15,9 +15,24 @@ interface Props {
 
 export default function ProductModal({ open, product, inCart, onClose, onToggleCart }: Props) {
   const [justAdded, setJustAdded] = useState(false)
+  const [showFullDescription, setShowFullDescription] = useState(false)
+  const [needsExpansion, setNeedsExpansion] = useState(false)
+  
   useEffect(() => {
-    if (!open) setJustAdded(false)
+    if (!open) {
+      setJustAdded(false)
+      setShowFullDescription(false)
+      setNeedsExpansion(false)
+    }
   }, [open])
+  
+  useEffect(() => {
+    if (open && product?.description) {
+      const lines = (product.description || '').trim().split('\n').length
+      setNeedsExpansion(lines > 6)
+    }
+  }, [open, product?.description])
+  
   if (!open || !product) return null
   const src = product.asset_link ? getOptimizedGoogleDriveUrl(product.asset_link, product.asset_type) : undefined
   const description = (product.description || '').trim()
@@ -28,9 +43,9 @@ export default function ProductModal({ open, product, inCart, onClose, onToggleC
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="absolute inset-x-0 bottom-0 mx-auto max-w-md bg-black rounded-t-2xl border border-white/10 overflow-hidden animate-slide-up">
+      <div className="absolute inset-x-0 bottom-0 mx-auto max-w-md bg-black rounded-t-2xl border border-white/10 overflow-hidden animate-slide-up max-h-[90dvh] flex flex-col">
         {/* Header */}
-        <div className="relative aspect-[3/4] w-full bg-white/5">
+        <div className="relative aspect-[3/4] w-full bg-white/5 flex-shrink-0">
           {src ? (
             <Image
               src={src}
@@ -57,10 +72,23 @@ export default function ProductModal({ open, product, inCart, onClose, onToggleC
           </button>
         </div>
 
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 overflow-y-auto flex-1">
           <h3 className="text-base font-semibold leading-snug">{product.product_name}</h3>
           {description && (
-            <p className="text-sm text-white/70 whitespace-pre-line">{description}</p>
+            <div className="space-y-2">
+              <p className={`text-sm text-white/70 whitespace-pre-line ${!showFullDescription && needsExpansion ? 'line-clamp-6' : ''}`}>
+                {description}
+              </p>
+              {needsExpansion && (
+                <button
+                  type="button"
+                  onClick={() => setShowFullDescription(!showFullDescription)}
+                  className="text-xs text-whatsapp-primary hover:text-whatsapp-primary/80 font-medium transition-colors"
+                >
+                  {showFullDescription ? 'Show less' : 'Show more'}
+                </button>
+              )}
+            </div>
           )}
 
           <div className="pt-1">

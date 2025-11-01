@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Product } from '@/types'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 const STORAGE_KEY = 'shop_cart_items'
 

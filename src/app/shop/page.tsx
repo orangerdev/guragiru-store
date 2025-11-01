@@ -1,14 +1,14 @@
 'use client'
 
+import FloatingCartButton from '@/components/FloatingCartButton'
+import ProductModal from '@/components/ProductModal'
+import { useCart } from '@/hooks/useCart'
 import { apiService } from '@/services/api'
 import { whatsappService } from '@/services/whatsapp'
 import type { Product } from '@/types'
 import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDrive'
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useCart } from '@/hooks/useCart'
-import FloatingCartButton from '@/components/FloatingCartButton'
-import ProductModal from '@/components/ProductModal'
 
 export default function ShopPage() {
   const LIMIT = 10
