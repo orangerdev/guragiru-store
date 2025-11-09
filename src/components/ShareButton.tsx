@@ -3,14 +3,14 @@
 import type { Product } from '@/types'
 import { useState } from 'react'
 import {
-  WhatsappShareButton,
-  FacebookShareButton,
-  TwitterShareButton,
-  TelegramShareButton,
-  WhatsappIcon,
   FacebookIcon,
-  XIcon,
+  FacebookShareButton,
   TelegramIcon,
+  TelegramShareButton,
+  TwitterShareButton,
+  WhatsappIcon,
+  WhatsappShareButton,
+  XIcon,
 } from 'react-share'
 
 interface Props {
@@ -33,10 +33,10 @@ export default function ShareButton({ product, className = '', compact = false }
     ? product.description.trim()
     : `Check out this product: ${product.product_name}`
   
-  // Full share text for WhatsApp (includes description)
+  // Full share text for WhatsApp (includes description and image preview)
   const whatsappText = product.description
-    ? `${product.product_name}\n\n${product.description}\n\nLihat produk: ${shareUrl}`
-    : `${product.product_name}\n\nLihat produk: ${shareUrl}`
+    ? `${product.product_name}\n\n${product.description}\n\n${product.asset_link}\n\nLihat produk:`
+    : `${product.product_name}\n\n${product.asset_link}\n\nLihat produk:`
 
   return (
     <div className={`relative ${className}`}>
