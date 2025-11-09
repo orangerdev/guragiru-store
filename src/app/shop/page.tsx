@@ -3,6 +3,7 @@
 import FloatingCartButton from '@/components/FloatingCartButton'
 import LoadingScreen from '@/components/LoadingScreen'
 import ProductModal from '@/components/ProductModal'
+import ShareButton from '@/components/ShareButton'
 import Toast from '@/components/Toast'
 import { useCart } from '@/hooks/useCart'
 import { apiService } from '@/services/api'
@@ -341,6 +342,10 @@ function ProductCard({ product, showDescription, inCart, onToggleCart, onOpenMod
         >
           Added
         </span>
+        {/* Share button at bottom-right */}
+        <div className="absolute bottom-2 right-2 pointer-events-auto z-10">
+          <ShareButton product={product} />
+        </div>
       </button>
 
       <div className="p-3 flex flex-col gap-2 min-h-[132px]">

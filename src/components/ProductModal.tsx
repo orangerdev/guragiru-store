@@ -5,6 +5,7 @@ import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDriv
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import ShareButton from './ShareButton'
 
 interface Props {
   open: boolean
@@ -105,6 +106,10 @@ export default function ProductModal({ open, product, inCart, onClose, onToggleC
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
+          {/* Share button at bottom-right */}
+          <div className="absolute bottom-3 right-3 z-10">
+            <ShareButton product={product} />
+          </div>
         </div>
 
         <div className="p-4 space-y-3 overflow-y-auto flex-1">
