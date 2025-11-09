@@ -6,6 +6,7 @@ import ProductModal from '@/components/ProductModal'
 import ShareButton from '@/components/ShareButton'
 import Toast from '@/components/Toast'
 import { useCart } from '@/hooks/useCart'
+import { useProductMetaTags } from '@/hooks/useProductMetaTags'
 import { apiService } from '@/services/api'
 import { whatsappService } from '@/services/whatsapp'
 import type { Product } from '@/types'
@@ -35,6 +36,9 @@ function ShopContent() {
   const [fetchingProduct, setFetchingProduct] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const hasCheckedDeepLink = useRef(false)
+
+  // Update meta tags untuk product sharing
+  useProductMetaTags(modalProduct, modalOpen)
 
   const loadPage = useCallback(async (p: number, replace = false) => {
     if (isFetchingRef.current) return

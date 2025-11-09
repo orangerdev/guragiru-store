@@ -30,8 +30,13 @@ export default function ShareButton({ product, className = '', compact = false }
   // Share title and description
   const shareTitle = `${product.product_name} - Gura Giru`
   const shareDescription = product.description 
-    ? `${product.description.substring(0, 100)}${product.description.length > 100 ? '...' : ''}`
+    ? product.description.trim()
     : `Check out this product: ${product.product_name}`
+  
+  // Full share text for WhatsApp (includes description)
+  const whatsappText = product.description
+    ? `${product.product_name}\n\n${product.description}\n\nLihat produk: ${shareUrl}`
+    : `${product.product_name}\n\nLihat produk: ${shareUrl}`
 
   return (
     <div className={`relative ${className}`}>
@@ -73,8 +78,8 @@ export default function ShareButton({ product, className = '', compact = false }
               {/* WhatsApp */}
               <WhatsappShareButton
                 url={shareUrl}
-                title={shareTitle}
-                separator=" - "
+                title={whatsappText}
+                separator=""
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowMenu(false)
@@ -102,7 +107,7 @@ export default function ShareButton({ product, className = '', compact = false }
               {/* Twitter / X */}
               <TwitterShareButton
                 url={shareUrl}
-                title={shareTitle}
+                title={`${shareTitle}\n\n${shareDescription}`}
                 hashtags={['GuraGiru', 'Shopping']}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -117,7 +122,7 @@ export default function ShareButton({ product, className = '', compact = false }
               {/* Telegram */}
               <TelegramShareButton
                 url={shareUrl}
-                title={shareTitle}
+                title={`${shareTitle}\n\n${shareDescription}`}
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowMenu(false)
