@@ -16,9 +16,10 @@ import {
 interface Props {
   product: Product
   className?: string
+  compact?: boolean // For product card (smaller size)
 }
 
-export default function ShareButton({ product, className = '' }: Props) {
+export default function ShareButton({ product, className = '', compact = false }: Props) {
   const [showMenu, setShowMenu] = useState(false)
   
   // Generate shareable URL
@@ -66,9 +67,9 @@ export default function ShareButton({ product, className = '' }: Props) {
           />
           
           {/* Menu */}
-          <div className="absolute bottom-full right-0 mb-2 z-50 bg-black/95 backdrop-blur-md rounded-lg border border-white/20 p-3 shadow-xl min-w-[200px]">
-            <div className="text-white text-xs font-semibold mb-3 px-1">Share to:</div>
-            <div className="flex flex-col gap-2">
+          <div className={`absolute bottom-full right-0 mb-2 z-50 bg-black/95 backdrop-blur-md rounded-lg border border-white/20 shadow-xl ${compact ? 'p-2 min-w-[160px]' : 'p-3 min-w-[200px]'}`}>
+            <div className={`text-white font-semibold mb-2 px-1 ${compact ? 'text-[10px]' : 'text-xs'}`}>Share to:</div>
+            <div className={`flex flex-col ${compact ? 'gap-1' : 'gap-2'}`}>
               {/* WhatsApp */}
               <WhatsappShareButton
                 url={shareUrl}
@@ -78,10 +79,10 @@ export default function ShareButton({ product, className = '' }: Props) {
                   e.stopPropagation()
                   setShowMenu(false)
                 }}
-                className="flex items-center gap-3 hover:bg-white/10 rounded-lg p-2 transition-colors w-full"
+                className={`flex items-center hover:bg-white/10 rounded-lg transition-colors w-full text-left ${compact ? 'gap-2 p-1.5' : 'gap-3 p-2'}`}
               >
-                <WhatsappIcon size={32} round />
-                <span className="text-white text-sm font-medium">WhatsApp</span>
+                <WhatsappIcon size={compact ? 24 : 32} round />
+                <span className={`text-white font-medium ${compact ? 'text-xs' : 'text-sm'}`}>WhatsApp</span>
               </WhatsappShareButton>
 
               {/* Facebook */}
@@ -92,10 +93,10 @@ export default function ShareButton({ product, className = '' }: Props) {
                   e.stopPropagation()
                   setShowMenu(false)
                 }}
-                className="flex items-center gap-3 hover:bg-white/10 rounded-lg p-2 transition-colors w-full"
+                className={`flex items-center hover:bg-white/10 rounded-lg transition-colors w-full text-left ${compact ? 'gap-2 p-1.5' : 'gap-3 p-2'}`}
               >
-                <FacebookIcon size={32} round />
-                <span className="text-white text-sm font-medium">Facebook</span>
+                <FacebookIcon size={compact ? 24 : 32} round />
+                <span className={`text-white font-medium ${compact ? 'text-xs' : 'text-sm'}`}>Facebook</span>
               </FacebookShareButton>
 
               {/* Twitter / X */}
@@ -107,10 +108,10 @@ export default function ShareButton({ product, className = '' }: Props) {
                   e.stopPropagation()
                   setShowMenu(false)
                 }}
-                className="flex items-center gap-3 hover:bg-white/10 rounded-lg p-2 transition-colors w-full"
+                className={`flex items-center hover:bg-white/10 rounded-lg transition-colors w-full text-left ${compact ? 'gap-2 p-1.5' : 'gap-3 p-2'}`}
               >
-                <XIcon size={32} round />
-                <span className="text-white text-sm font-medium">Twitter / X</span>
+                <XIcon size={compact ? 24 : 32} round />
+                <span className={`text-white font-medium ${compact ? 'text-xs' : 'text-sm'}`}>Twitter / X</span>
               </TwitterShareButton>
 
               {/* Telegram */}
@@ -121,10 +122,10 @@ export default function ShareButton({ product, className = '' }: Props) {
                   e.stopPropagation()
                   setShowMenu(false)
                 }}
-                className="flex items-center gap-3 hover:bg-white/10 rounded-lg p-2 transition-colors w-full"
+                className={`flex items-center hover:bg-white/10 rounded-lg transition-colors w-full text-left ${compact ? 'gap-2 p-1.5' : 'gap-3 p-2'}`}
               >
-                <TelegramIcon size={32} round />
-                <span className="text-white text-sm font-medium">Telegram</span>
+                <TelegramIcon size={compact ? 24 : 32} round />
+                <span className={`text-white font-medium ${compact ? 'text-xs' : 'text-sm'}`}>Telegram</span>
               </TelegramShareButton>
 
               {/* Copy Link */}
@@ -136,15 +137,15 @@ export default function ShareButton({ product, className = '' }: Props) {
                   setShowMenu(false)
                   // You can add a toast notification here
                 }}
-                className="flex items-center gap-3 hover:bg-white/10 rounded-lg p-2 transition-colors w-full"
+                className={`flex items-center hover:bg-white/10 rounded-lg transition-colors w-full text-left ${compact ? 'gap-2 p-1.5' : 'gap-3 p-2'}`}
               >
-                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <div className={`rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0 ${compact ? 'w-6 h-6' : 'w-8 h-8'}`}>
+                  <svg viewBox="0 0 24 24" className={`text-white ${compact ? 'w-3 h-3' : 'w-4 h-4'}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                   </svg>
                 </div>
-                <span className="text-white text-sm font-medium">Copy Link</span>
+                <span className={`text-white font-medium ${compact ? 'text-xs' : 'text-sm'}`}>Copy Link</span>
               </button>
             </div>
           </div>

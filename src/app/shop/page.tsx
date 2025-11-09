@@ -344,7 +344,7 @@ function ProductCard({ product, showDescription, inCart, onToggleCart, onOpenMod
         </span>
         {/* Share button at bottom-right */}
         <div className="absolute bottom-2 right-2 pointer-events-auto z-10">
-          <ShareButton product={product} />
+          <ShareButton product={product} compact />
         </div>
       </button>
 
