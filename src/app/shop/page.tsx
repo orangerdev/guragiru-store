@@ -1,17 +1,21 @@
 'use client'
 
 import FloatingCartButton from '@/components/FloatingCartButton'
+import LoadingScreen from '@/components/LoadingScreen'
 import ProductModal from '@/components/ProductModal'
+import Toast from '@/components/Toast'
 import { useCart } from '@/hooks/useCart'
 import { apiService } from '@/services/api'
 import { whatsappService } from '@/services/whatsapp'
 import type { Product } from '@/types'
 import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDrive'
 import Image from 'next/image'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-export default function ShopPage() {
+function ShopContent() {
   const LIMIT = 10
+  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -27,6 +31,9 @@ export default function ShopPage() {
   const cart = useCart()
   const [modalOpen, setModalOpen] = useState(false)
   const [modalProduct, setModalProduct] = useState<Product | undefined>(undefined)
+  const [fetchingProduct, setFetchingProduct] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
+  const hasCheckedDeepLink = useRef(false)
 
   const loadPage = useCallback(async (p: number, replace = false) => {
     if (isFetchingRef.current) return
@@ -54,6 +61,49 @@ export default function ShopPage() {
     // initial load
     loadPage(1, true)
   }, [loadPage])
+
+  // Handle deep linking - check for product slug in URL
+  useEffect(() => {
+    if (hasCheckedDeepLink.current) return
+    if (loading || products.length === 0) return // Wait for initial products to load
+    
+    const productSlug = searchParams?.get('product')
+    if (!productSlug) {
+      hasCheckedDeepLink.current = true
+      return
+    }
+
+    hasCheckedDeepLink.current = true
+
+    // Check if product exists in current list
+    const existingProduct = products.find(p => p.product_slug === productSlug)
+    
+    if (existingProduct) {
+      // Product found in list, open modal
+      setModalProduct(existingProduct)
+      setModalOpen(true)
+    } else {
+      // Product not in list, fetch from API
+      const fetchProductBySlug = async () => {
+        setFetchingProduct(true)
+        try {
+          const product = await apiService.getProductBySlug(productSlug)
+          if (product) {
+            setModalProduct(product)
+            setModalOpen(true)
+          } else {
+            setToast({ message: 'Produk tidak ditemukan', type: 'error' })
+          }
+        } catch (error) {
+          console.error('Error fetching product by slug:', error)
+          setToast({ message: 'Gagal memuat produk', type: 'error' })
+        } finally {
+          setFetchingProduct(false)
+        }
+      }
+      fetchProductBySlug()
+    }
+  }, [products, loading, searchParams])
 
   // Compact header on scroll
   useEffect(() => {
@@ -220,6 +270,22 @@ export default function ShopPage() {
         onClose={() => setModalOpen(false)}
         onToggleCart={() => modalProduct && cart.toggle(modalProduct)}
       />
+
+      {/* Loading overlay for product fetch */}
+      {fetchingProduct && (
+        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center">
+          <LoadingScreen />
+        </div>
+      )}
+
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </main>
   )
 }
@@ -345,5 +411,14 @@ function ShimmerCard() {
         <div className="h-9 bg-whatsapp-primary/20 rounded" />
       </div>
     </article>
+  )
+}
+
+// Wrap ShopContent with Suspense for useSearchParams()
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <ShopContent />
+    </Suspense>
   )
 }

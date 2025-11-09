@@ -38,7 +38,36 @@ class ApiService {
     }
   }
 
+  /**
+   * Fetch a single product by slug from the internal API route
+   */
+  async getProductBySlug(slug: string): Promise<Product | null> {
+    try {
+      const url = `/api/products/slug/${slug}`
 
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store', // Always fetch fresh data
+      })
+
+      if (response.status === 404) {
+        return null // Product not found
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data: { product?: Product } = await response.json()
+      return data.product || null
+    } catch (error) {
+      console.error('Error fetching product by slug:', error)
+      throw error
+    }
+  }
 
   /**
    * Check API health (using external endpoint directly from server)

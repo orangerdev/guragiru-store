@@ -3,7 +3,8 @@
 import type { Product } from '@/types'
 import { getOptimizedGoogleDriveUrl, isGoogleDriveUrl } from '@/utils/googleDrive'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
   open: boolean
@@ -14,9 +15,43 @@ interface Props {
 }
 
 export default function ProductModal({ open, product, inCart, onClose, onToggleCart }: Props) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [justAdded, setJustAdded] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [needsExpansion, setNeedsExpansion] = useState(false)
+  const prevOpenRef = useRef(open)
+  const prevSlugRef = useRef(product?.product_slug)
+  
+  // Update URL when modal opens/closes
+  useEffect(() => {
+    const currentProductParam = searchParams?.get('product')
+    const currentSlug = product?.product_slug
+    
+    // Only act on actual state changes
+    const openChanged = prevOpenRef.current !== open
+    const slugChanged = prevSlugRef.current !== currentSlug
+    
+    if (openChanged || slugChanged) {
+      if (open && currentSlug) {
+        // Modal is opening or product changed - add/update URL param
+        if (currentProductParam !== currentSlug) {
+          const params = new URLSearchParams(searchParams?.toString() || '')
+          params.set('product', currentSlug)
+          router.push(`/shop?${params.toString()}`, { scroll: false })
+        }
+      } else if (!open && prevOpenRef.current && currentProductParam) {
+        // Modal is closing - remove URL param
+        const params = new URLSearchParams(searchParams?.toString() || '')
+        params.delete('product')
+        const newUrl = params.toString() ? `/shop?${params.toString()}` : '/shop'
+        router.push(newUrl, { scroll: false })
+      }
+      
+      prevOpenRef.current = open
+      prevSlugRef.current = currentSlug
+    }
+  }, [open, product?.product_slug, router, searchParams])
   
   useEffect(() => {
     if (!open) {
