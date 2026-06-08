@@ -51,6 +51,32 @@
     animation: fade-in 300ms ease-out both;
   }
 
+  /* WhatsApp join group button animations */
+  @keyframes wa-wiggle {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    15% { transform: rotate(-7deg) scale(1.06); }
+    30% { transform: rotate(7deg) scale(1.06); }
+    45% { transform: rotate(-4deg) scale(1.03); }
+    60% { transform: rotate(4deg) scale(1.03); }
+    75% { transform: rotate(-2deg) scale(1.01); }
+    85% { transform: rotate(0deg) scale(1); }
+  }
+  @keyframes wa-flash {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+    50% { box-shadow: 0 0 0 7px rgba(37, 211, 102, 0.35); }
+  }
+  @keyframes wa-arrow-bounce {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(4px); }
+  }
+  .wa-join-anim {
+    animation: wa-wiggle 2.4s ease-in-out 0.5s infinite, wa-flash 1.6s ease-in-out 0s infinite;
+    display: inline-flex;
+  }
+  .wa-join-anim .wa-arrow {
+    animation: wa-arrow-bounce 0.7s ease-in-out infinite;
+  }
+
   /* Centered mobile shell for desktop/tablet while keeping mobile-first layout */
   .mobile-shell {
     @apply mx-auto min-h-screen w-full;
