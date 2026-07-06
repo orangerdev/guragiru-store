@@ -3,7 +3,10 @@ import { Inter } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'optional',
+})
 
 export const metadata: Metadata = {
   title: 'GuraGiru Shop - Product Stories',
@@ -32,7 +35,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {/* Histats.com START (async) */}
-        <Script id="histats-init" strategy="afterInteractive">
+        <Script id="histats-init" strategy="lazyOnload">
           {`
             var _Hasync = _Hasync || [];
             _Hasync.push(['Histats.start', '1,4987426,4,0,0,0,00010000']);

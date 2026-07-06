@@ -25,3 +25,12 @@ command = "opennextjs-cloudflare build"
 NEXT_PUBLIC_API_BASE_URL = "https://shop-db.orangerdigiart.workers.dev"
 NEXT_PUBLIC_WHATSAPP_PHONE = "62811984666"
 NEXT_PUBLIC_WHATSAPP_DEFAULT_MESSAGE = "Halo, saya tertarik dengan produk ini:"
+ENVIRONMENT = "production"
+# JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD_HASH, AGENT_API_KEY
+# are set via `wrangler secret put` — never in plaintext here
+
+# D1 Database for microsite CMS
+[[d1_databases]]
+binding = "DB"
+database_name = "guragiru-cms"
+database_id = "fa4c355f-3881-404d-8f8d-720e778c811b"

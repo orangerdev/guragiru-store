@@ -1,7 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["drive.google.com", "lh3.googleusercontent.com", "example.com"],
+    domains: [
+      "drive.google.com",
+      "lh3.googleusercontent.com",
+      "example.com",
+      "imagedelivery.net",
+      "absurdvote.com",
+    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -15,6 +21,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "imagedelivery.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "**",
       },
       {
@@ -22,6 +33,29 @@ const nextConfig = {
         hostname: "**",
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: "/post/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=300, stale-while-revalidate=86400",
+          },
+          { key: "Vary", value: "Accept-Encoding" },
+        ],
+      },
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
   },
 };
 
