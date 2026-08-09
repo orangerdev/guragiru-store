@@ -14,8 +14,8 @@ export default async function OrderDetailPage({
   params: Promise<{ orderId: string }>
 }) {
   const session = await getSession()
-  if (!session || !['administrator', 'data_input'].includes(session.role)) {
-    redirect('/order/login')
+  if (!session || !['admin', 'administrator', 'data_input'].includes(session.role)) {
+    redirect('/admin/login')
   }
 
   const { orderId } = await params

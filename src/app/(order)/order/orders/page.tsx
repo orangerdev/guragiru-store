@@ -10,8 +10,8 @@ function formatCurrency(amount: number): string {
 
 export default async function OrdersPage() {
   const session = await getSession()
-  if (!session || !['administrator', 'data_input'].includes(session.role)) {
-    redirect('/order/login')
+  if (!session || !['admin', 'administrator', 'data_input'].includes(session.role)) {
+    redirect('/admin/login')
   }
 
   const db = await getDb()

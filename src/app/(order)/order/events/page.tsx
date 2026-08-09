@@ -7,8 +7,8 @@ import Link from 'next/link'
 
 export default async function EventsPage() {
   const session = await getSession()
-  if (!session || !['administrator', 'data_input'].includes(session.role)) {
-    redirect('/order/login')
+  if (!session || !['admin', 'administrator', 'data_input'].includes(session.role)) {
+    redirect('/admin/login')
   }
 
   const db = await getDb()
@@ -46,7 +46,7 @@ export default async function EventsPage() {
                   {new Date(event.created_at).toLocaleDateString('id-ID')}
                 </p>
               </Link>
-              {session.role === 'administrator' && (
+              {['admin', 'administrator'].includes(session.role) && (
                 <form action={archiveEventAction}>
                   <input type="hidden" name="id" value={event.id} />
                   <button

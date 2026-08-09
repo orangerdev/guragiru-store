@@ -11,8 +11,8 @@ export default async function NewCustomerPage({
   params: Promise<{ eventId: string }>
 }) {
   const session = await getSession()
-  if (!session || !['administrator', 'data_input'].includes(session.role)) {
-    redirect('/order/login')
+  if (!session || !['admin', 'administrator', 'data_input'].includes(session.role)) {
+    redirect('/admin/login')
   }
 
   const { eventId } = await params

@@ -22,13 +22,15 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ email, password }),
       })
 
+      const data = (await res.json()) as { error?: string; role?: string }
+
       if (!res.ok) {
-        const data = (await res.json()) as { error?: string }
         setError(data.error || 'Login failed')
         return
       }
 
-      router.push('/admin/dashboard')
+      const destination = data.role === 'data_input' ? '/order/dashboard' : '/admin/dashboard'
+      router.push(destination)
       router.refresh()
     } catch {
       setError('Network error')

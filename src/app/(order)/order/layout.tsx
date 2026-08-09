@@ -18,7 +18,7 @@ export default async function OrderLayout({
   // Allow login page without auth
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {session && ['administrator', 'data_input'].includes(session.role) ? (
+      {session && ['admin', 'administrator', 'data_input'].includes(session.role) ? (
         <div className="flex flex-col min-h-screen">
           <OrderNav session={session} />
           <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">

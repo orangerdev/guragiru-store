@@ -18,7 +18,7 @@ const adminOnlyItems = [
 export default function OrderNav({ session }: { session: AdminPayload }) {
   const pathname = usePathname()
 
-  const allItems = session.role === 'administrator'
+  const allItems = ['admin', 'administrator'].includes(session.role)
     ? [...navItems, ...adminOnlyItems]
     : navItems
 
@@ -50,6 +50,11 @@ export default function OrderNav({ session }: { session: AdminPayload }) {
             <span className="text-xs text-gray-500">
               {session.email} ({session.role})
             </span>
+            {['admin', 'administrator'].includes(session.role) && (
+              <Link href="/admin/dashboard" className="text-xs text-gray-500 hover:text-white transition-colors">
+                Admin
+              </Link>
+            )}
             <form action="/api/order/auth/logout" method="POST">
               <button
                 type="submit"

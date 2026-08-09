@@ -15,7 +15,7 @@ const CONFIG_KEYS = [
 
 export default async function ConfigPage() {
   const session = await getSession()
-  if (!session || session.role !== 'administrator') {
+  if (!session || !['admin', 'administrator'].includes(session.role)) {
     redirect('/order/dashboard')
   }
 

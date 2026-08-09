@@ -40,8 +40,8 @@ function assertSameOrigin(headersList: Headers): void {
 
 async function requireOrderUser() {
   const session = await getSession()
-  if (!session || !['administrator', 'data_input'].includes(session.role)) {
-    redirect('/order/login')
+  if (!session || !['admin', 'administrator', 'data_input'].includes(session.role)) {
+    redirect('/admin/login')
   }
   return session
 }
@@ -67,7 +67,7 @@ export async function archiveEventAction(formData: FormData) {
   const headersList = await headers()
   assertSameOrigin(headersList)
   const session = await requireOrderUser()
-  assertRole(session, 'administrator')
+  assertRole(session, 'admin', 'administrator')
 
   const id = Number(formData.get('id'))
   if (!id) throw new Error('Event ID is required')
@@ -210,7 +210,7 @@ export async function getOrderAction(id: number) {
 
 export async function getConfigAction() {
   const session = await requireOrderUser()
-  assertRole(session, 'administrator')
+  assertRole(session, 'admin', 'administrator')
   const db = await getDb()
   return getAllConfig(db)
 }
@@ -219,7 +219,7 @@ export async function updateConfigAction(formData: FormData) {
   const headersList = await headers()
   assertSameOrigin(headersList)
   const session = await requireOrderUser()
-  assertRole(session, 'administrator')
+  assertRole(session, 'admin', 'administrator')
 
   const key = formData.get('key') as string
   const value = formData.get('value') as string

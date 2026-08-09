@@ -6,8 +6,8 @@ import Link from 'next/link'
 
 export default async function OrderDashboardPage() {
   const session = await getSession()
-  if (!session || !['administrator', 'data_input'].includes(session.role)) {
-    redirect('/order/login')
+  if (!session || !['admin', 'administrator', 'data_input'].includes(session.role)) {
+    redirect('/admin/login')
   }
 
   const db = await getDb()
@@ -31,7 +31,7 @@ export default async function OrderDashboardPage() {
         <QuickLink href="/order/events" title="Events" desc="Kelola event dan customer" />
         <QuickLink href="/order/invoices" title="Buat Invoice" desc="Generate invoice baru" />
         <QuickLink href="/order/orders" title="Orders" desc="Lihat semua order" />
-        {session.role === 'administrator' && (
+        {['admin', 'administrator'].includes(session.role) && (
           <QuickLink href="/order/config" title="Config" desc="Pengaturan sistem" />
         )}
       </div>

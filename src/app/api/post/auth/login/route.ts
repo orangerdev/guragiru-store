@@ -37,10 +37,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const token = await createAdminToken(admin.id, email, (admin.role || 'admin') as UserRole)
+    const role = (admin.role || 'admin') as UserRole
+    const token = await createAdminToken(admin.id, email, role)
     await setSessionCookie(token)
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, role })
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(

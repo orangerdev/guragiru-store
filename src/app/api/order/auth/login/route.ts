@@ -5,7 +5,7 @@ import { getDb } from '@/lib/db/d1'
 import type { Admin } from '@/lib/db/types'
 import { NextRequest, NextResponse } from 'next/server'
 
-const ORDER_ROLES: UserRole[] = ['administrator', 'data_input']
+const ORDER_ROLES: UserRole[] = ['admin', 'administrator', 'data_input']
 
 export async function POST(request: NextRequest) {
   try {
