@@ -2,6 +2,8 @@ import type { MetadataRoute } from 'next'
 import { getDb } from '@/lib/db/d1'
 import { getAllPublishedSlugs } from '@/lib/db/posts'
 
+export const dynamic = 'force-dynamic'
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://guragiru.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
