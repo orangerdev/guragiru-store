@@ -34,3 +34,8 @@ ENVIRONMENT = "production"
 binding = "DB"
 database_name = "guragiru-cms"
 database_id = "fa4c355f-3881-404d-8f8d-720e778c811b"
+
+# R2 Bucket for invoice image storage
+[[r2_buckets]]
+binding = "INVOICE_BUCKET"
+bucket_name = "guragiru-invoices"

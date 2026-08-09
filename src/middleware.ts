@@ -10,7 +10,7 @@ export function middleware(request: NextRequest): NextResponse {
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' imagedelivery.net lh3.googleusercontent.com sstatic1.histats.com data: blob:`,
     `font-src 'self'`,
-    `connect-src 'self' shop-db.orangerdigiart.workers.dev guragiru-db-sync.orangerdigiart.workers.dev`,
+    `connect-src 'self' shop-db.orangerdigiart.workers.dev guragiru-db-sync.orangerdigiart.workers.dev fonts.gstatic.com`,
     `frame-src 'none'`,
     `object-src 'none'`,
     `base-uri 'self'`,

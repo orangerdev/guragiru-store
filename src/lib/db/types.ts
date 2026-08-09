@@ -15,6 +15,7 @@ export interface Admin {
   id: string
   email: string
   password_hash: string
+  role: string
   created_at: string
 }
 
@@ -33,4 +34,64 @@ export interface Media {
   width: number
   height: number
   created_at: string
+}
+
+// Order Management types
+
+export interface Event {
+  id: number
+  name: string
+  created_at: string
+  archived: number
+}
+
+export interface EventCustomer {
+  id: number
+  event_id: number
+  name: string
+  created_at: string
+}
+
+export interface EventItem {
+  id: number
+  customer_id: number
+  item_name: string
+  quantity: number
+  price: number
+  cost_price: number
+  created_at: string
+}
+
+export interface InvoiceCounter {
+  date: string
+  counter: number
+}
+
+export interface Order {
+  id: number
+  invoice_id: string
+  event_name: string
+  customer_name: string
+  phone: string
+  subtotal: number
+  discount: number
+  shipping: number
+  total: number
+  payment_url: string | null
+  invoice_file: string | null
+  created_at: string
+}
+
+export interface OrderItem {
+  id: number
+  order_id: number
+  item_name: string
+  quantity: number
+  unit_price: number
+  subtotal: number
+}
+
+export interface ConfigEntry {
+  key: string
+  value: string
 }
