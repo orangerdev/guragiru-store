@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 export default async function PostDetailPage({ params }: Props) {
   const { slug } = await params
