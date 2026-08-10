@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface Event {
   id: number
@@ -38,6 +38,18 @@ export default function GenerateInvoicePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Inline tambah event
+  const [showNewEvent, setShowNewEvent] = useState(false)
+  const [newEventName, setNewEventName] = useState('')
+  const [savingEvent, setSavingEvent] = useState(false)
+  const newEventInputRef = useRef<HTMLInputElement>(null)
+
+  // Inline tambah customer
+  const [showNewCustomer, setShowNewCustomer] = useState(false)
+  const [newCustomerName, setNewCustomerName] = useState('')
+  const [savingCustomer, setSavingCustomer] = useState(false)
+  const newCustomerInputRef = useRef<HTMLInputElement>(null)
+
   // Load events on mount
   useEffect(() => {
     fetch('/api/order/events')
@@ -45,6 +57,16 @@ export default function GenerateInvoicePage() {
       .then((data) => setEvents(data.events || []))
       .catch(() => setError('Gagal memuat events'))
   }, [])
+
+  // Focus new event input when shown
+  useEffect(() => {
+    if (showNewEvent) newEventInputRef.current?.focus()
+  }, [showNewEvent])
+
+  // Focus new customer input when shown
+  useEffect(() => {
+    if (showNewCustomer) newCustomerInputRef.current?.focus()
+  }, [showNewCustomer])
 
   // Load customers when event selected
   useEffect(() => {
@@ -59,6 +81,8 @@ export default function GenerateInvoicePage() {
     setSelectedCustomer(null)
     setItems([])
     setSelectedItems([])
+    setShowNewCustomer(false)
+    setNewCustomerName('')
   }, [selectedEvent])
 
   // Load items when customer selected
@@ -85,6 +109,60 @@ export default function GenerateInvoicePage() {
     setSelectedItems((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     )
+  }
+
+  async function handleAddEvent() {
+    if (!newEventName.trim()) return
+    setSavingEvent(true)
+    setError('')
+    try {
+      const res = await fetch('/api/order/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newEventName.trim() }),
+      })
+      const data = await res.json() as { event?: Event; error?: string }
+      if (!res.ok) {
+        setError(data.error || 'Gagal membuat event')
+        return
+      }
+      const created = data.event!
+      setEvents((prev) => [created, ...prev])
+      setSelectedEvent(created.id)
+      setNewEventName('')
+      setShowNewEvent(false)
+    } catch {
+      setError('Network error')
+    } finally {
+      setSavingEvent(false)
+    }
+  }
+
+  async function handleAddCustomer() {
+    if (!newCustomerName.trim() || !selectedEvent) return
+    setSavingCustomer(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/order/events/${selectedEvent}/customers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCustomerName.trim() }),
+      })
+      const data = await res.json() as { customer?: Customer; error?: string }
+      if (!res.ok) {
+        setError(data.error || 'Gagal membuat customer')
+        return
+      }
+      const created = data.customer!
+      setCustomers((prev) => [created, ...prev])
+      setSelectedCustomer(created.id)
+      setNewCustomerName('')
+      setShowNewCustomer(false)
+    } catch {
+      setError('Network error')
+    } finally {
+      setSavingCustomer(false)
+    }
   }
 
   async function handleGenerate(e: React.FormEvent) {
@@ -139,37 +217,113 @@ export default function GenerateInvoicePage() {
       <form onSubmit={handleGenerate} className="space-y-6">
         {/* Event Selection */}
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Event</label>
-          <select
-            value={selectedEvent ?? ''}
-            onChange={(e) => setSelectedEvent(Number(e.target.value) || null)}
-            className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
-          >
-            <option value="">Pilih event...</option>
-            {events.map((ev) => (
-              <option key={ev.id} value={ev.id}>
-                {ev.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-sm text-gray-400">Event</label>
+            <button
+              type="button"
+              onClick={() => {
+                setShowNewEvent((v) => !v)
+                setNewEventName('')
+              }}
+              className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              {showNewEvent ? 'Batal' : '+ Tambah Event Baru'}
+            </button>
+          </div>
+
+          {showNewEvent ? (
+            <div className="flex gap-2">
+              <input
+                ref={newEventInputRef}
+                type="text"
+                value={newEventName}
+                onChange={(e) => setNewEventName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); void handleAddEvent() }
+                  if (e.key === 'Escape') { setShowNewEvent(false); setNewEventName('') }
+                }}
+                placeholder="Nama event baru..."
+                className="flex-1 bg-gray-900 border border-blue-500/50 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => void handleAddEvent()}
+                disabled={savingEvent || !newEventName.trim()}
+                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm px-3 py-2 rounded transition-colors"
+              >
+                {savingEvent ? '...' : 'Simpan'}
+              </button>
+            </div>
+          ) : (
+            <select
+              value={selectedEvent ?? ''}
+              onChange={(e) => setSelectedEvent(Number(e.target.value) || null)}
+              className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+            >
+              <option value="">Pilih event...</option>
+              {events.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Customer Selection */}
         {selectedEvent && (
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Customer</label>
-            <select
-              value={selectedCustomer ?? ''}
-              onChange={(e) => setSelectedCustomer(Number(e.target.value) || null)}
-              className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
-            >
-              <option value="">Pilih customer...</option>
-              {customers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm text-gray-400">Customer</label>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNewCustomer((v) => !v)
+                  setNewCustomerName('')
+                }}
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                {showNewCustomer ? 'Batal' : '+ Tambah Customer Baru'}
+              </button>
+            </div>
+
+            {showNewCustomer ? (
+              <div className="flex gap-2">
+                <input
+                  ref={newCustomerInputRef}
+                  type="text"
+                  value={newCustomerName}
+                  onChange={(e) => setNewCustomerName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); void handleAddCustomer() }
+                    if (e.key === 'Escape') { setShowNewCustomer(false); setNewCustomerName('') }
+                  }}
+                  placeholder="Nama customer baru..."
+                  className="flex-1 bg-gray-900 border border-blue-500/50 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleAddCustomer()}
+                  disabled={savingCustomer || !newCustomerName.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm px-3 py-2 rounded transition-colors"
+                >
+                  {savingCustomer ? '...' : 'Simpan'}
+                </button>
+              </div>
+            ) : (
+              <select
+                value={selectedCustomer ?? ''}
+                onChange={(e) => setSelectedCustomer(Number(e.target.value) || null)}
+                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Pilih customer...</option>
+                {customers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         )}
 
